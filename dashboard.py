@@ -67,10 +67,10 @@ st.markdown("""
         display: inline-block;
         width: 12px;
         height: 12px;
-        background: #f59e0b;
+        background: #6366f1;
         margin-right: 12px;
         border-radius: 3px;
-        box-shadow: 0 0 10px #f59e0b;
+        box-shadow: 0 0 10px #6366f1;
     }
 
     [data-testid="stMetric"] {
@@ -82,7 +82,7 @@ st.markdown("""
         transition: all 0.4s ease;
     }
     [data-testid="stMetric"]:hover {
-        border-color: rgba(245, 158, 11, 0.4);
+        border-color: rgba(99, 102, 241, 0.4);
         background: rgba(255, 255, 255, 0.04);
         transform: translateY(-5px);
     }
@@ -99,8 +99,8 @@ st.markdown("""
     }
 
     .stButton>button {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        color: #030712;
+        background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+        color: white;
         border: none;
         border-radius: 12px;
         padding: 14px 28px;
@@ -112,7 +112,7 @@ st.markdown("""
     }
     .stButton>button:hover {
         transform: scale(1.02);
-        box-shadow: 0 0 25px rgba(245, 158, 11, 0.4);
+        box-shadow: 0 0 25px rgba(99, 102, 241, 0.4);
     }
 
     .alert-card {
@@ -126,7 +126,7 @@ st.markdown("""
         align-items: center;
     }
     .alert-date { font-weight: 700; color: #f8fafc; }
-    .alert-val { color: #f59e0b; font-weight: 800; font-size: 1.1rem; }
+    .alert-val { color: #818cf8; font-weight: 800; font-size: 1.1rem; }
     .alert-badge { 
         background: rgba(239, 68, 68, 0.1); 
         color: #ef4444; 
@@ -170,11 +170,11 @@ with st.sidebar:
         df_exp = pd.read_csv(DATA_PATH)
         st.download_button("Download Full Intel (.csv)", df_exp.to_csv(index=False), "ai_sales_export.csv")
     st.markdown("<br>"*5, unsafe_allow_html=True)
-    st.caption("AI RESEARCH LAB v5.0 | Enterprise Cloud")
+    st.caption("AI RESEARCH LAB v6.0 | Enterprise Cloud")
 
 # --- HEADER ---
 st.markdown('<h1 class="dashboard-header">AI Sales Pulse ⚡</h1>', unsafe_allow_html=True)
-st.markdown('<p class="sub-gradient">Strategic Enterprise Demand Intelligence & Back-Test Analysis.</p>', unsafe_allow_html=True)
+st.markdown('<p class="sub-gradient">Strategic Enterprise Demand Intelligence & Pipeline Forecasting.</p>', unsafe_allow_html=True)
 
 df = load_data()
 val_df = load_val_data()
@@ -194,23 +194,59 @@ if df is not None:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # GRAPH 1: ML Probability & Risk Distribution (Image 4 Style)
-    st.markdown('<p class="section-title">Graph 2: ML Probability & Risk Distribution</p>', unsafe_allow_html=True)
+    # 1. NEW CHART: Unified Historical & Future Sales Pipeline (Image 5 Style)
+    st.markdown('<p class="section-title">Unified Historical & Future Sales Pipeline</p>', unsafe_allow_html=True)
+    with st.container(border=True):
+        fig_unified = go.Figure()
+        
+        # Historical
+        hist_trim = actuals.tail(90)
+        fig_unified.add_trace(go.Scatter(x=hist_trim['Date'], y=hist_trim['Revenue'], name='Historical Sales (Actual)', line=dict(color='#60a5fa', width=2)))
+        
+        # Forecast Horizon Vertical Line
+        last_date = actuals['Date'].iloc[-1]
+        fig_unified.add_vline(x=last_date, line_dash="dash", line_color="#ef4444", annotation_text="Forecast Horizon Trigger")
+        
+        # Future Forecast with Bridge
+        bridge_dates = pd.concat([pd.Series([last_date]), forecast['Date']])
+        bridge_revenue = pd.concat([pd.Series([actuals['Revenue'].iloc[-1]]), forecast['Revenue']])
+        
+        # Variance Range
+        fig_unified.add_trace(go.Scatter(
+            x=pd.concat([forecast['Date'], forecast['Date'][::-1]]),
+            y=pd.concat([forecast['Revenue']*1.15, (forecast['Revenue']*0.85)[::-1]]),
+            fill='toself', fillcolor='rgba(245, 158, 11, 0.1)',
+            line=dict(color='rgba(255,255,255,0)'), name='Prediction Variance Range'
+        ))
+        
+        fig_unified.add_trace(go.Scatter(x=bridge_dates, y=bridge_revenue, name='ML Future Forecast (Predicted)', line=dict(color='#f59e0b', width=4)))
+        
+        fig_unified.update_layout(
+            template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+            height=500, margin=dict(l=0, r=0, t=20, b=0),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
+            xaxis=dict(showgrid=True, gridcolor='rgba(255,255,255,0.05)'),
+            yaxis=dict(showgrid=True, gridcolor='rgba(255,255,255,0.05)')
+        )
+        st.plotly_chart(fig_unified, use_container_width=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # 2. ML Probability & Risk Distribution
+    st.markdown('<p class="section-title">ML Probability & Risk Distribution</p>', unsafe_allow_html=True)
     with st.container(border=True):
         fig_risk = go.Figure()
-        # Band
         fig_risk.add_trace(go.Scatter(
             x=pd.concat([forecast['Date'], forecast['Date'][::-1]]),
             y=pd.concat([forecast['Revenue']*1.2, (forecast['Revenue']*0.8)[::-1]]),
-            fill='toself', fillcolor='rgba(245, 158, 11, 0.15)',
+            fill='toself', fillcolor='rgba(255, 255, 255, 0.05)',
             line=dict(color='rgba(255,255,255,0)'), name='80% Confidence Band'
         ))
-        # Line
-        fig_risk.add_trace(go.Scatter(x=forecast['Date'], y=forecast['Revenue'], name='Core Prediction Path', line=dict(color='white', width=3)))
+        fig_risk.add_trace(go.Scatter(x=forecast['Date'], y=forecast['Revenue'], name='Core Prediction Path', line=dict(color='white', width=2)))
         
         fig_risk.update_layout(
             template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-            height=450, margin=dict(l=0, r=0, t=20, b=0),
+            height=400, margin=dict(l=0, r=0, t=10, b=0),
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
             xaxis=dict(showgrid=True, gridcolor='rgba(255,255,255,0.05)'),
             yaxis=dict(showgrid=True, gridcolor='rgba(255,255,255,0.05)')
@@ -219,58 +255,54 @@ if df is not None:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # GRAPH 2: Validation Strategy (Image 3 Style)
-    if val_df is not None:
-        st.markdown('<p class="section-title">Validation Strategy: 30-Day Blind Back-Test</p>', unsafe_allow_html=True)
+    # 3. Middle Row: Density and Validation
+    st.markdown('<p class="section-title">Comparative Analysis & Model Verification</p>', unsafe_allow_html=True)
+    c_left, c_right = st.columns(2)
+    
+    with c_left:
+        # KDE
         with st.container(border=True):
-            fig_val = go.Figure()
-            fig_val.add_trace(go.Scatter(x=val_df['Date'], y=val_df['Actual'], name='Actual Data (Real)', line=dict(color='#60a5fa', width=2), marker=dict(size=8, symbol='circle')))
-            fig_val.add_trace(go.Scatter(x=val_df['Date'], y=val_df['Forecast'], name='ML Forecast', line=dict(color='#ef4444', width=2, dash='dash'), marker=dict(size=8, symbol='x')))
+            st.markdown("<p style='font-size: 0.9rem; font-weight: 700; color: #94a3b8;'>Sales Volume Density Comparison</p>", unsafe_allow_html=True)
+            hist_vals = actuals['Revenue'].tail(150).values
+            pred_vals = forecast['Revenue'].values
+            full_r = np.linspace(min(min(hist_vals), min(pred_vals))*0.5, max(max(hist_vals), max(pred_vals))*1.2, 200)
+            k_h = gaussian_kde(hist_vals)(full_r)
+            k_p = gaussian_kde(pred_vals)(full_r)
             
-            fig_val.update_layout(
-                template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-                height=450, margin=dict(l=0, r=0, t=20, b=0),
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
-                xaxis=dict(showgrid=True, gridcolor='rgba(255,255,255,0.05)'),
-                yaxis=dict(showgrid=True, gridcolor='rgba(255,255,255,0.05)')
-            )
-            st.plotly_chart(fig_val, use_container_width=True)
+            fig_kde = go.Figure()
+            fig_kde.add_trace(go.Scatter(x=full_r, y=k_h, fill='toself', name='Past (Actual)', fillcolor='rgba(96, 165, 250, 0.2)', line=dict(color='#60a5fa')))
+            fig_kde.add_trace(go.Scatter(x=full_r, y=k_p, fill='toself', name='Future (Predicted)', fillcolor='rgba(245, 158, 11, 0.2)', line=dict(color='#f59e0b')))
+            fig_kde.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=300, margin=dict(l=0, r=0, t=0, b=0), legend=dict(orientation="h", x=0, y=1.1))
+            st.plotly_chart(fig_kde, use_container_width=True)
+
+    with c_right:
+        # Validation
+        if val_df is not None:
+            with st.container(border=True):
+                st.markdown("<p style='font-size: 0.9rem; font-weight: 700; color: #94a3b8;'>30-Day Blind Back-Test Results</p>", unsafe_allow_html=True)
+                fig_v = go.Figure()
+                fig_v.add_trace(go.Scatter(x=val_df['Date'], y=val_df['Actual'], name='Real', line=dict(color='#60a5fa')))
+                fig_v.add_trace(go.Scatter(x=val_df['Date'], y=val_df['Forecast'], name='ML', line=dict(color='#ef4444', dash='dash')))
+                fig_v.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=300, margin=dict(l=0, r=0, t=0, b=0), legend=dict(orientation="h", x=0, y=1.1))
+                st.plotly_chart(fig_v, use_container_width=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Row with Density and Weekday (Image 1 & 2 Style)
-    r1, r2 = st.columns([1.2, 0.8])
-    with r1:
-        st.markdown('<p class="section-title">Graph 6: Sales Volume Density Comparison</p>', unsafe_allow_html=True)
+    # 4. Final Section: Demand Distribution & Alerts
+    st.markdown('<p class="section-title">Critical Surplus Awareness</p>', unsafe_allow_html=True)
+    r_left, r_right = st.columns([1.2, 0.8])
+    
+    with r_left:
         with st.container(border=True):
-            # KDE Calculation
-            hist_vals = actuals['Revenue'].tail(120).values
-            pred_vals = forecast['Revenue'].values
-            
-            # Combine for range
-            full_range = np.linspace(min(min(hist_vals), min(pred_vals))*0.5, max(max(hist_vals), max(pred_vals))*1.2, 200)
-            
-            kde_hist = gaussian_kde(hist_vals)(full_range)
-            kde_pred = gaussian_kde(pred_vals)(full_range)
-            
-            fig_kde = go.Figure()
-            fig_kde.add_trace(go.Scatter(x=full_range, y=kde_hist, fill='toself', name='Past Sales Volume (Actual)', fillcolor='rgba(96, 165, 250, 0.3)', line=dict(color='#60a5fa')))
-            fig_kde.add_trace(go.Scatter(x=full_range, y=kde_pred, fill='toself', name='Future Sales Volume (Predicted)', fillcolor='rgba(245, 158, 11, 0.3)', line=dict(color='#f59e0b')))
-            
-            fig_kde.update_layout(
-                template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-                height=400, margin=dict(l=0, r=0, t=20, b=0),
-                xaxis_title="Sales Revenue", yaxis_title="Probability Density",
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0)
-            )
-            st.plotly_chart(fig_kde, use_container_width=True)
+            fig_rd = px.bar(forecast, x='Date', y='Revenue', color='Revenue', color_continuous_scale='Turbo')
+            fig_rd.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=400, margin=dict(l=0, r=0, t=10, b=0), coloraxis_showscale=False)
+            st.plotly_chart(fig_rd, use_container_width=True)
 
-    with r2:
-        st.markdown('<p class="section-title">Critical High-Demand Alerts</p>', unsafe_allow_html=True)
+    with r_right:
         with st.container(border=True):
-            top_days = forecast.nlargest(6, 'Revenue')
-            st.markdown("<div style='height: 350px; overflow-y: auto;'>", unsafe_allow_html=True)
-            for _, row in top_days.iterrows():
+            top_d = forecast.nlargest(6, 'Revenue')
+            st.markdown("<div style='height: 380px; overflow-y: auto;'>", unsafe_allow_html=True)
+            for _, row in top_d.iterrows():
                 st.markdown(f"""
                 <div class="alert-card">
                     <div>
@@ -285,19 +317,8 @@ if df is not None:
                 """, unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
-    # FINAL BAR ROADMAP
     st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown('<p class="section-title">Strategic 30-Day Demand Roadmap</p>', unsafe_allow_html=True)
-    with st.container(border=True):
-        day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-        day_stats = forecast.groupby('Weekday')['Revenue'].mean().reindex(day_order)
-        
-        fig_bar = px.bar(x=day_stats.index, y=day_stats.values, labels={'x':'', 'y':''}, color=day_stats.values, color_continuous_scale='YlOrBr')
-        fig_bar.update_layout(
-            template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-            height=350, margin=dict(l=0, r=0, t=10, b=0), coloraxis_showscale=False
-        )
-        st.plotly_chart(fig_bar, use_container_width=True)
+    st.markdown(f"<div style='text-align: center; color: #475569; font-size: 0.8rem;'>Dashboard Integrity: 🟢 SECURE | Computational Node Active</div>", unsafe_allow_html=True)
 
 else:
-    st.info("System Initialization Requested. Please run the Retrain Engine protocol from the sidebar.")
+    st.info("System Ready. Please initiate Data Sync.")
