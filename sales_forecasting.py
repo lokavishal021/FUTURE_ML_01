@@ -104,6 +104,14 @@ def train_model():
     plt.tight_layout()
     plt.savefig('plots/accuracy_test.png', dpi=300)
     plt.close()
+
+    # SAVE VALIDATION DATA FOR DASHBOARD
+    validation_df = pd.DataFrame({
+        'Date': y_test_real.index,
+        'Actual': y_test_real.values,
+        'Forecast': y_pred
+    })
+    validation_df.to_csv('data/validation_results.csv', index=False)
     
     return best_model
 
