@@ -9,5 +9,7 @@ statsmodels
 joblib
 streamlit
 plotly
-altair<5
+altair
 watchdog
+scipy
+Pillow
