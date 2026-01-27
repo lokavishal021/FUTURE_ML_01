@@ -205,7 +205,15 @@ if df is not None:
         
         # Forecast Horizon Vertical Line
         last_date = actuals['Date'].iloc[-1]
-        fig_unified.add_vline(x=last_date, line_dash="dash", line_color="#ef4444", annotation_text="Forecast Horizon Trigger")
+        # Forecast Horizon Vertical Line (Manual Shape to avoid Python 3.13 Bug)
+        fig_unified.add_shape(
+            type="line", x0=last_date, x1=last_date, y0=0, y1=1, yref="paper",
+            line=dict(color="#ef4444", width=2, dash="dash")
+        )
+        fig_unified.add_annotation(
+            x=last_date, y=1, yref="paper", text="Forecast Horizon Trigger",
+            showarrow=False, font=dict(color="#ef4444"), textangle=-90, xanchor="left"
+        )
         
         # Future Forecast with Bridge
         bridge_dates = pd.concat([pd.Series([last_date]), forecast['Date']])
