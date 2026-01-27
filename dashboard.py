@@ -203,11 +203,32 @@ if df is not None:
         hist_trim = actuals.tail(90)
         fig_unified.add_trace(go.Scatter(x=hist_trim['Date'], y=hist_trim['Revenue'], name='Historical Sales (Actual)', line=dict(color='#60a5fa', width=2)))
         
-        # Forecast Horizon Vertical Line (with safety check)
+        # Forecast Horizon Vertical Line (Robust Scatter Implementation)
         if not actuals.empty:
             last_date = actuals['Date'].iloc[-1]
-            last_date_val = last_date.strftime('%Y-%m-%d')
-            fig_unified.add_vline(x=last_date_val, line_dash="dash", line_color="#ef4444", annotation_text="Forecast Horizon Trigger")
+            max_y = max(actuals['Revenue'].max(), forecast['Revenue'].max()) * 1.2
+            
+            # Draw Vertical Line
+            fig_unified.add_trace(go.Scatter(
+                x=[last_date, last_date],
+                y=[0, max_y],
+                mode='lines',
+                line=dict(color="#ef4444", width=2, dash="dash"),
+                name="Forecast Horizon",
+                showlegend=False,
+                hoverinfo='skip'
+            ))
+            
+            # Add Annotation
+            fig_unified.add_annotation(
+                x=last_date, y=max_y*0.9,
+                text="Forecast Horizon Trigger",
+                showarrow=False,
+                textangle=-90,
+                font=dict(color="#ef4444", size=10),
+                xanchor="right"
+            )
+
             bridge_dates = pd.concat([pd.Series([last_date]), forecast['Date']])
             bridge_revenue = pd.concat([pd.Series([actuals['Revenue'].iloc[-1]]), forecast['Revenue']])
         else:
