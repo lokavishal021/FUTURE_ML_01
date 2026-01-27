@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+.env
+.agent/
+.gemini/
+.antigravity/
+node_modules/
+dist/
+build/
+*.log
+plots/*.png
+# We want to keep the models and data for the dashboard to work immediately on deployment
+# but we ignore local temp files if any
