@@ -44,7 +44,19 @@ def preprocess():
     # Fill timeline gaps
     daily_sales = daily_sales.asfreq('D').fillna(0)
 
-    # 4. Save to Lightweight CSV
+    # 4. Regional Aggregation (Market Share by Region)
+    print("--- Aggregating Regional Intel ---")
+    regional_sales = clean_df.groupby('Country')['Sales'].sum().reset_index()
+    regional_sales = regional_sales.sort_values('Sales', ascending=False)
+    
+    # Take top 5 and group the rest as Others
+    top_5 = regional_sales.head(5).copy()
+    others_val = regional_sales.iloc[5:]['Sales'].sum()
+    others = pd.DataFrame({'Country': ['Others'], 'Sales': [others_val]})
+    regional_final = pd.concat([top_5, others])
+    regional_final.to_csv(os.path.join(PROCESSED_FOLDER, 'regional_sales.csv'), index=False)
+
+    # 5. Save to Lightweight CSV
     print(f"--- Saving refined data to: {OUTPUT_FILE} ---")
     daily_sales.to_csv(OUTPUT_FILE)
     
