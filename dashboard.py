@@ -176,7 +176,16 @@ with st.sidebar:
 st.markdown('<h1 class="dashboard-header">AI Sales Pulse ⚡</h1>', unsafe_allow_html=True)
 st.markdown('<p class="sub-gradient">Strategic Enterprise Demand Intelligence & Pipeline Forecasting.</p>', unsafe_allow_html=True)
 
-# --- EXECUTIVE STRATEGIC BRIEF (NOW ALWAYS VISIBLE) ---
+# --- PROJECT PURPOSE & STRATEGY ---
+with st.container(border=True):
+    st.markdown("### **🎯 Project Purpose**")
+    st.markdown("""
+    This project is built to support **Online Retail** business decisions. It automates the process of identifying 
+    trends and predicting future demand using an **XGBoost AI Model**. The goal is to maximize inventory 
+    efficiency and minimize lost sales during peak periods.
+    """)
+
+# --- EXECUTIVE STRATEGIC BRIEF ---
 st.markdown('<p class="section-title">Executive Strategic Intelligence</p>', unsafe_allow_html=True)
 with st.container(border=True):
     c1, c2 = st.columns([1, 1])
@@ -223,30 +232,24 @@ if df is not None:
         fig_unified.add_trace(go.Scatter(x=hist_trim['Date'], y=hist_trim['Revenue'], name='Historical Sales (Actual)', line=dict(color='#60a5fa', width=2)))
         
         # Forecast Horizon Vertical Line
-        last_date = actuals['Date'].iloc[-1]
-        # Forecast Horizon Vertical Line (Manual Shape to avoid Python 3.13 Bug)
-        fig_unified.add_shape(
-            type="line", x0=last_date, x1=last_date, y0=0, y1=1, yref="paper",
-            line=dict(color="#ef4444", width=2, dash="dash")
-        )
-        fig_unified.add_annotation(
-            x=last_date, y=1, yref="paper", text="Forecast Horizon Trigger",
-            showarrow=False, font=dict(color="#ef4444"), textangle=-90, xanchor="left"
-        )
+        if not actuals.empty:
+            last_date = actuals['Date'].iloc[-1]
+            fig_unified.add_shape(
+                type="line", x0=last_date, x1=last_date, y0=0, y1=1, yref="paper",
+                line=dict(color="#ef4444", width=2, dash="dash")
+            )
+            fig_unified.add_annotation(
+                x=last_date, y=1, yref="paper", text="Forecast Horizon Trigger",
+                showarrow=False, font=dict(color="#ef4444"), textangle=-90, xanchor="left"
+            )
         
         # Future Forecast with Bridge
-        bridge_dates = pd.concat([pd.Series([last_date]), forecast['Date']])
-        bridge_revenue = pd.concat([pd.Series([actuals['Revenue'].iloc[-1]]), forecast['Revenue']])
-        
-        # Variance Range
-        fig_unified.add_trace(go.Scatter(
-            x=pd.concat([forecast['Date'], forecast['Date'][::-1]]),
-            y=pd.concat([forecast['Revenue']*1.15, (forecast['Revenue']*0.85)[::-1]]),
-            fill='toself', fillcolor='rgba(245, 158, 11, 0.1)',
-            line=dict(color='rgba(255,255,255,0)'), name='Prediction Variance Range'
-        ))
-        
-        fig_unified.add_trace(go.Scatter(x=bridge_dates, y=bridge_revenue, name='ML Future Forecast (Predicted)', line=dict(color='#f59e0b', width=4)))
+        if not actuals.empty and not forecast.empty:
+            bridge_dates = pd.concat([pd.Series([last_date]), forecast['Date']])
+            bridge_revenue = pd.concat([pd.Series([actuals['Revenue'].iloc[-1]]), forecast['Revenue']])
+            fig_unified.add_trace(go.Scatter(x=bridge_dates, y=bridge_revenue, name='ML Future Forecast (Predicted)', line=dict(color='#f59e0b', width=4)))
+        elif not forecast.empty:
+            fig_unified.add_trace(go.Scatter(x=forecast['Date'], y=forecast['Revenue'], name='ML Future Forecast (Predicted)', line=dict(color='#f59e0b', width=4)))
         
         fig_unified.update_layout(
             template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
@@ -263,13 +266,14 @@ if df is not None:
     st.markdown('<p class="section-title">ML Probability & Risk Distribution</p>', unsafe_allow_html=True)
     with st.container(border=True):
         fig_risk = go.Figure()
-        fig_risk.add_trace(go.Scatter(
-            x=pd.concat([forecast['Date'], forecast['Date'][::-1]]),
-            y=pd.concat([forecast['Revenue']*1.2, (forecast['Revenue']*0.8)[::-1]]),
-            fill='toself', fillcolor='rgba(255, 255, 255, 0.05)',
-            line=dict(color='rgba(255,255,255,0)'), name='80% Confidence Band'
-        ))
-        fig_risk.add_trace(go.Scatter(x=forecast['Date'], y=forecast['Revenue'], name='Core Prediction Path', line=dict(color='white', width=2)))
+        if not forecast.empty:
+            fig_risk.add_trace(go.Scatter(
+                x=pd.concat([forecast['Date'], forecast['Date'][::-1]]),
+                y=pd.concat([forecast['Revenue']*1.2, (forecast['Revenue']*0.8)[::-1]]),
+                fill='toself', fillcolor='rgba(255, 255, 255, 0.05)',
+                line=dict(color='rgba(255,255,255,0)'), name='80% Confidence Band'
+            ))
+            fig_risk.add_trace(go.Scatter(x=forecast['Date'], y=forecast['Revenue'], name='Core Prediction Path', line=dict(color='white', width=2)))
         
         fig_risk.update_layout(
             template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
@@ -279,6 +283,31 @@ if df is not None:
             yaxis=dict(showgrid=True, gridcolor='rgba(255,255,255,0.05)')
         )
         st.plotly_chart(fig_risk, use_container_width=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # 3. NEW SECTION: WEEKLY & WEEKDAY ANALYSIS (Total 7 Graphs)
+    st.markdown('<p class="section-title">Institutional Demand Patterns</p>', unsafe_allow_html=True)
+    c_w1, c_w2 = st.columns(2)
+    with c_w1:
+        with st.container(border=True):
+            st.markdown("<p style='font-size: 0.9rem; font-weight: 700; color: #94a3b8;'>Weekly Sales Pulse (Actual vs Forecast)</p>", unsafe_allow_html=True)
+            hist_weekly = actuals.set_index('Date')['Revenue'].resample('W').sum().tail(4)
+            pred_weekly = forecast.set_index('Date')['Revenue'].resample('W').sum()
+            
+            fig_weekly = go.Figure()
+            fig_weekly.add_trace(go.Bar(x=[f"Actual W{i+1}" for i in range(len(hist_weekly))], y=hist_weekly, name='Actual', marker_color='#334155'))
+            fig_weekly.add_trace(go.Bar(x=[f"Forecast W{i+1}" for i in range(len(pred_weekly))], y=pred_weekly, name='Forecast', marker_color='#6366f1'))
+            fig_weekly.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=300, margin=dict(l=0,r=0,t=0,b=0))
+            st.plotly_chart(fig_weekly, use_container_width=True)
+            
+    with c_w2:
+        with st.container(border=True):
+            st.markdown("<p style='font-size: 0.9rem; font-weight: 700; color: #94a3b8;'>Predicted Revenue Distribution by Weekday</p>", unsafe_allow_html=True)
+            weekday_dist = forecast.groupby('Weekday')['Revenue'].mean().reindex(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']).fillna(0)
+            fig_day = px.pie(values=weekday_dist.values, names=weekday_dist.index, hole=0.6, color_discrete_sequence=px.colors.sequential.Plasma_r)
+            fig_day.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=300, margin=dict(l=0,r=0,t=0,b=0), showlegend=False)
+            st.plotly_chart(fig_day, use_container_width=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
