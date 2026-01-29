@@ -396,27 +396,26 @@ if df is not None:
 
         with st.container(border=True):
             st.markdown("#### **🔥 High-Volume Surges**")
-            st.markdown("<p style='font-size: 0.7rem; color: #64748b; margin-top: -15px;'>Detected peak demand events requiring operational focus.</p>", unsafe_allow_html=True)
+            st.markdown("<p style='font-size: 0.75rem; color: #64748b; margin-top: -15px;'>Detected peak demand events requiring focus.</p>", unsafe_allow_html=True)
             
             top_d = forecast.nlargest(8, 'Revenue')
             
-            # Combine all cards into one HTML block to prevent Streamlit gap issue
-            alerts_html = "<div style='height: 300px; overflow-y: auto; padding-right: 10px;'>"
+            # Use the CSS classes defined in the header for a cleaner, safer implementation
+            st.markdown("<div style='height: 320px; overflow-y: auto; padding-right: 15px;'>", unsafe_allow_html=True)
             for _, row in top_d.iterrows():
-                alerts_html += f"""
-                <div class="alert-card" style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 12px;">
+                st.markdown(f"""
+                <div class="alert-card">
                     <div>
-                        <div class="alert-date" style="font-weight: 700; color: #f8fafc;">{row['Date'].strftime('%d %B')}</div>
+                        <div class="alert-date">{row['Date'].strftime('%d %B')}</div>
                         <div style='color: #64748b; font-size: 0.8rem;'>{row['Weekday']}</div>
                     </div>
                     <div style='text-align: right;'>
-                        <span class="alert-badge" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 800;">🔥 PEAK ALERT</span><br>
-                        <div class="alert-val" style="color: #818cf8; font-weight: 800; font-size: 1.1rem;">${row['Revenue']:,.0f}</div>
+                        <span class="alert-badge">🔥 PEAK ALERT</span><br>
+                        <div class="alert-val">${row['Revenue']:,.0f}</div>
                     </div>
                 </div>
-                """
-            alerts_html += "</div>"
-            st.markdown(alerts_html, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown(f"<div style='text-align: center; color: #475569; font-size: 0.8rem;'>Dashboard Integrity: 🟢 SECURE | Computational Node Active</div>", unsafe_allow_html=True)
