@@ -293,18 +293,17 @@ if df is not None:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # 3. NEW SECTION: WEEKLY & WEEKDAY ANALYSIS (Total 7 Graphs)
-    st.markdown('<p class="section-title">Institutional Demand Patterns</p>', unsafe_allow_html=True)
-    c_w1, c_w2 = st.columns(2)
     # 3. SECTION: Regional Analysis & Optimal Days
-    st.markdown('<p class="section-title">Institutional Demand Patterns</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-title">Global Reach & Operational Efficiency</p>', unsafe_allow_html=True)
     c_w1, c_w2 = st.columns(2)
     with c_w1:
         with st.container(border=True):
             st.markdown("<p style='font-size: 0.9rem; font-weight: 700; color: #94a3b8;'>Market Share by Region</p>", unsafe_allow_html=True)
             st.markdown("<p style='font-size: 0.7rem; color: #64748b; margin-top: -15px;'>Global revenue distribution across top 5 performing countries.</p>", unsafe_allow_html=True)
             if reg_df is not None:
-                fig_reg = px.pie(reg_df, values='Sales', names='Country', hole=0.6, color_discrete_sequence=px.colors.sequential.Plasma_r)
+                # Custom colors for a premium look
+                colors = ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#64748b']
+                fig_reg = px.pie(reg_df, values='Sales', names='Country', hole=0.6, color_discrete_sequence=colors)
                 fig_reg.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=350, margin=dict(l=0,r=0,t=0,b=0), showlegend=True, legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.1))
                 st.plotly_chart(fig_reg, use_container_width=True)
             st.markdown("<div style='background: rgba(99, 102, 241, 0.05); padding: 10px; border-radius: 8px; border-left: 3px solid #6366f1;'><p style='font-size: 0.75rem; font-weight: 700; color: #818cf8; margin: 0;'>Strategic Action:</p><p style='font-size: 0.7rem; color: #94a3b8; margin: 0;'>Target localized marketing campaigns in high-performing regions to maximize ROI.</p></div>", unsafe_allow_html=True)
@@ -314,28 +313,34 @@ if df is not None:
             st.markdown("<p style='font-size: 0.9rem; font-weight: 700; color: #94a3b8;'>Optimal Operational Days</p>", unsafe_allow_html=True)
             st.markdown("<p style='font-size: 0.7rem; color: #64748b; margin-top: -15px;'>Revenue concentration by day of the week.</p>", unsafe_allow_html=True)
             weekday_rev = actuals.groupby('Weekday')['Revenue'].mean().reindex(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']).fillna(0)
-            fig_opt = px.bar(x=weekday_rev.index, y=weekday_rev.values, labels={'x': '', 'y': ''}, color_discrete_sequence=['#6366f1'])
-            fig_opt.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=350, margin=dict(l=0,r=0,t=10,b=0))
+            fig_opt = px.bar(x=weekday_rev.index, y=weekday_rev.values, labels={'x': '', 'y': ''}, marker_color='#6366f1')
+            fig_opt.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=325, margin=dict(l=0,r=0,t=10,b=0))
             st.plotly_chart(fig_opt, use_container_width=True)
             st.markdown("<div style='background: rgba(99, 102, 241, 0.05); padding: 10px; border-radius: 8px; border-left: 3px solid #6366f1;'><p style='font-size: 0.75rem; font-weight: 700; color: #818cf8; margin: 0;'>Resource Tip:</p><p style='font-size: 0.7rem; color: #94a3b8; margin: 0;'>Scale staffing levels during high-volume days revealed in the distribution above.</p></div>", unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
-    
-    # 4. SECTION: Weekly Summary & Validation
-    st.markdown('<p class="section-title">Institutional Forecasting Analysis</p>', unsafe_allow_html=True)
-    c_f1, c_f2 = st.columns(2)
-    with c_f1:
+
+    # 4. SECTION: Comparative Analysis & Model Verification
+    st.markdown('<p class="section-title">Comparative Analysis & Model Verification</p>', unsafe_allow_html=True)
+    c_left, c_right = st.columns(2)
+    with c_left:
+        # KDE
         with st.container(border=True):
-            st.markdown("<p style='font-size: 0.9rem; font-weight: 700; color: #94a3b8;'>Weekly Sales Pulse (Actual vs Forecast)</p>", unsafe_allow_html=True)
-            hist_weekly = actuals.set_index('Date')['Revenue'].resample('W').sum().tail(4)
-            pred_weekly = forecast.set_index('Date')['Revenue'].resample('W').sum()
-            fig_weekly = go.Figure()
-            fig_weekly.add_trace(go.Bar(x=[f"Actual W{i+1}" for i in range(len(hist_weekly))], y=hist_weekly, name='Actual', marker_color='#334155'))
-            fig_weekly.add_trace(go.Bar(x=[f"Forecast W{i+1}" for i in range(len(pred_weekly))], y=pred_weekly, name='Forecast', marker_color='#6366f1'))
-            fig_weekly.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=300, margin=dict(l=0,r=0,t=0,b=0))
-            st.plotly_chart(fig_weekly, use_container_width=True)
-    
-    with c_f2:
+            st.markdown("<p style='font-size: 0.9rem; font-weight: 700; color: #94a3b8;'>Sales Volume Density Comparison</p>", unsafe_allow_html=True)
+            hist_vals = actuals['Revenue'].tail(150).values
+            pred_vals = forecast['Revenue'].values
+            full_r = np.linspace(min(min(hist_vals), min(pred_vals))*0.5, max(max(hist_vals), max(pred_vals))*1.2, 200)
+            k_h = gaussian_kde(hist_vals)(full_r)
+            k_p = gaussian_kde(pred_vals)(full_r)
+            
+            fig_kde = go.Figure()
+            fig_kde.add_trace(go.Scatter(x=full_r, y=k_h, fill='toself', name='Past (Actual)', fillcolor='rgba(96, 165, 250, 0.2)', line=dict(color='#60a5fa')))
+            fig_kde.add_trace(go.Scatter(x=full_r, y=k_p, fill='toself', name='Future (Predicted)', fillcolor='rgba(245, 158, 11, 0.2)', line=dict(color='#f59e0b')))
+            fig_kde.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=300, margin=dict(l=0, r=0, t=0, b=0), legend=dict(orientation="h", x=0, y=1.1))
+            st.plotly_chart(fig_kde, use_container_width=True)
+
+    with c_right:
+        # Validation
         if val_df is not None:
             with st.container(border=True):
                 st.markdown("<p style='font-size: 0.9rem; font-weight: 700; color: #94a3b8;'>30-Day Blind Back-Test Results</p>", unsafe_allow_html=True)
@@ -346,6 +351,18 @@ if df is not None:
                 st.plotly_chart(fig_v, use_container_width=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
+    
+    # 5. SECTION: Weekly Summary
+    st.markdown('<p class="section-title">Institutional Forecasting Analysis</p>', unsafe_allow_html=True)
+    with st.container(border=True):
+        st.markdown("<p style='font-size: 0.9rem; font-weight: 700; color: #94a3b8;'>Weekly Sales Pulse (Actual vs Forecast)</p>", unsafe_allow_html=True)
+        hist_weekly = actuals.set_index('Date')['Revenue'].resample('W').sum().tail(4)
+        pred_weekly = forecast.set_index('Date')['Revenue'].resample('W').sum()
+        fig_weekly = go.Figure()
+        fig_weekly.add_trace(go.Bar(x=[f"Actual W{i+1}" for i in range(len(hist_weekly))], y=hist_weekly, name='Actual', marker_color='#334155'))
+        fig_weekly.add_trace(go.Bar(x=[f"Forecast W{i+1}" for i in range(len(pred_weekly))], y=pred_weekly, name='Forecast', marker_color='#6366f1'))
+        fig_weekly.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=300, margin=dict(l=0,r=0,t=0,b=0))
+        st.plotly_chart(fig_weekly, use_container_width=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -360,9 +377,20 @@ if df is not None:
             st.plotly_chart(fig_rd, use_container_width=True)
 
     with r_right:
+        # Filling the void with high-level intelligence
         with st.container(border=True):
-            top_d = forecast.nlargest(6, 'Revenue')
-            st.markdown("<div style='height: 380px; overflow-y: auto;'>", unsafe_allow_html=True)
+            st.markdown("#### **🎯 Strategic Forecast Insight**")
+            st.markdown(f"""
+            The model predicts a total volume of **${forecast['Revenue'].sum():,.0f}** for the next 30 days. 
+            Demand is expected to be **{((forecast['Revenue'].sum() / actuals['Revenue'].tail(30).sum()) - 1)*100:+.1f}%** 
+            compared to the previous period.
+            """)
+            st.info("💡 Recommendation: Align logistics for the upcoming surge.")
+
+        with st.container(border=True):
+            st.markdown("#### **🔥 High-Volume Surges**")
+            top_d = forecast.nlargest(8, 'Revenue')
+            st.markdown("<div style='height: 250px; overflow-y: auto;'>", unsafe_allow_html=True)
             for _, row in top_d.iterrows():
                 st.markdown(f"""
                 <div class="alert-card">
