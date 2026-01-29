@@ -313,7 +313,7 @@ if df is not None:
             st.markdown("<p style='font-size: 0.9rem; font-weight: 700; color: #94a3b8;'>Optimal Operational Days</p>", unsafe_allow_html=True)
             st.markdown("<p style='font-size: 0.7rem; color: #64748b; margin-top: -15px;'>Revenue concentration by day of the week.</p>", unsafe_allow_html=True)
             weekday_rev = actuals.groupby('Weekday')['Revenue'].mean().reindex(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']).fillna(0)
-            fig_opt = px.bar(x=weekday_rev.index, y=weekday_rev.values, labels={'x': '', 'y': ''}, marker_color='#6366f1')
+            fig_opt = px.bar(x=weekday_rev.index, y=weekday_rev.values, labels={'x': '', 'y': ''}, color_discrete_sequence=['#6366f1'])
             fig_opt.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=325, margin=dict(l=0,r=0,t=10,b=0))
             st.plotly_chart(fig_opt, use_container_width=True)
             st.markdown("<div style='background: rgba(99, 102, 241, 0.05); padding: 10px; border-radius: 8px; border-left: 3px solid #6366f1;'><p style='font-size: 0.75rem; font-weight: 700; color: #818cf8; margin: 0;'>Resource Tip:</p><p style='font-size: 0.7rem; color: #94a3b8; margin: 0;'>Scale staffing levels during high-volume days revealed in the distribution above.</p></div>", unsafe_allow_html=True)
