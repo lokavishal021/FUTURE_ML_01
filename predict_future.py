@@ -65,13 +65,13 @@ def generate_forecast():
     plt.plot(full_plot_dates, full_plot_values, label='ML Future Forecast (Predicted)', color='darkorange', linewidth=3)
     plt.fill_between(forecast_dates, np.array(future_forecast)*0.85, np.array(future_forecast)*1.15, color='orange', alpha=0.1, label='Prediction Variance Range')
     plt.axvline(last_date, color='red', linestyle='--', alpha=0.5, label='Forecast Horizon Trigger')
-    plt.title('Graph 1: Unified Historical & Future Sales Pipeline', fontsize=16, fontweight='bold')
+    plt.title('Unified Historical & Future Sales Pipeline', fontsize=16, fontweight='bold')
     plt.legend(frameon=True, shadow=True, loc='upper left'); plt.savefig('plots/1_main_forecast.png', dpi=300); plt.close()
 
     # Graph 2: Risk Fan
     plt.figure(figsize=(12, 6)); plt.plot(forecast_dates, future_forecast, color='black', label='Core Prediction Path')
     plt.fill_between(forecast_dates, np.array(future_forecast)*0.8, np.array(future_forecast)*1.2, color='orange', alpha=0.2, label='80% Confidence Band')
-    plt.title('Graph 2: ML Probability & Risk Distribution', fontweight='bold'); plt.legend(frameon=True); plt.savefig('plots/2_risk_fan.png'); plt.close()
+    plt.title('ML Probability & Risk Distribution', fontweight='bold'); plt.legend(frameon=True); plt.savefig('plots/2_risk_fan.png'); plt.close()
 
     # Graph 3: Donut (Weekday Dist Compare)
     plt.figure(figsize=(10, 8))
@@ -94,7 +94,7 @@ def generate_forecast():
             colors=sns.color_palette('viridis', 7), pctdistance=0.85, 
             textprops={'fontweight':'bold', 'color':'black'}, wedgeprops={'alpha':0.8})
     plt.gca().add_artist(plt.Circle((0,0), 0.7, fc='white'))
-    plt.title('Graph 3: Predicted Sales Distribution by Weekday', fontweight='bold', fontsize=14)
+    plt.title('Predicted Sales Distribution by Weekday', fontweight='bold', fontsize=14)
     plt.legend(pred_day_rev.index, title="Weekdays", loc="center right", bbox_to_anchor=(1.2, 0.5))
     plt.tight_layout()
     plt.savefig('plots/3_revenue_donut.png', dpi=300); plt.close()
@@ -106,7 +106,7 @@ def generate_forecast():
     plt.bar(forecast_dates, future_forecast, color='skyblue', label='Future Sales Forecast (Predicted)')
     plt.plot(pd.concat([hist_window['Sales'], forecast_df['Predicted_Sales']]), color='darkorange', marker='o', markersize=4, label='Sales Trendline')
     plt.axvline(last_date, color='red', linestyle='--', linewidth=2, label='Forecast Start Line')
-    plt.title('Graph 4: 30-Day Predictive Sales Roadmap (Actual + Forecast)', fontweight='bold', fontsize=14)
+    plt.title('30-Day Predictive Sales Roadmap (Actual + Forecast)', fontweight='bold', fontsize=14)
     plt.xlabel('Date'); plt.ylabel('Sales Revenue')
     plt.legend(frameon=True, shadow=True); plt.savefig('plots/4_daily_roadmap.png', dpi=300); plt.close()
 
@@ -114,12 +114,12 @@ def generate_forecast():
     plt.figure(figsize=(14, 6)); plt.plot(forecast_dates, future_forecast, color='darkorange', linewidth=3, label='Predicted Demand Path')
     peaks = forecast_df.nlargest(5, 'Predicted_Sales')
     plt.scatter(peaks.index, peaks['Predicted_Sales'], color='red', s=150, edgecolors='black', label='Critical Surge Alert', zorder=5)
-    plt.title('Graph 5: Top 5 Predicted Demand Peaks', fontweight='bold'); plt.legend(); plt.savefig('plots/5_peak_detection.png'); plt.close()
+    plt.title('Top 5 Predicted Demand Peaks', fontweight='bold'); plt.legend(); plt.savefig('plots/5_peak_detection.png'); plt.close()
 
     # Graph 6: Distribution
     plt.figure(figsize=(10, 6)); sns.kdeplot(daily_sales['Sales'].iloc[-60:], fill=True, label='Past Sales Volume (Actual)', color='blue')
     sns.kdeplot(future_forecast, fill=True, label='Future Sales Volume (Predicted)', color='orange')
-    plt.title('Graph 6: Sales Volume Density Comparison', fontweight='bold'); plt.legend(); plt.savefig('plots/6_distribution_compare.png'); plt.close()
+    plt.title('Sales Volume Density Comparison', fontweight='bold'); plt.legend(); plt.savefig('plots/6_distribution_compare.png'); plt.close()
 
     # Graph 7: Weekly Predicted Revenue Totals (Actual vs Forecast)
     plt.figure(figsize=(12, 6))
@@ -131,7 +131,7 @@ def generate_forecast():
     
     plt.bar(hist_labels, hist_weekly, color='navy', alpha=0.6, label='Historical Weekly Total')
     plt.bar(pred_labels, pred_weekly, color='gold', alpha=0.8, label='Predicted Weekly Total')
-    plt.title('Graph 7: Weekly Sales Pulse (Actual vs Predicted)', fontweight='bold', fontsize=14)
+    plt.title('Weekly Sales Pulse (Actual vs Predicted)', fontweight='bold', fontsize=14)
     plt.ylabel('Total Revenue')
     plt.legend(frameon=True, shadow=True)
     plt.tight_layout()

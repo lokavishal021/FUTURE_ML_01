@@ -176,6 +176,20 @@ with st.sidebar:
 st.markdown('<h1 class="dashboard-header">AI Sales Pulse ⚡</h1>', unsafe_allow_html=True)
 st.markdown('<p class="sub-gradient">Strategic Enterprise Demand Intelligence & Pipeline Forecasting.</p>', unsafe_allow_html=True)
 
+# --- EXECUTIVE STRATEGIC BRIEF ---
+with st.expander("📝 EXECUTIVE STRATEGIC BRIEF (HOW TO USE THIS DATA)", expanded=False):
+    st.markdown("""
+    ### **1. Interpreting the Data**
+    - **Forecast Path**: The core line is your most likely revenue target.
+    - **Confidence Bands**: Shaded areas represent the 'Safe Zone'. If sales stay here, the business is on track.
+    - **Peak Alerts**: 🔥 indicate high-demand days where inventory and staffing must be maximized.
+
+    ### **2. Operational Action Plan**
+    - **Inventory**: Stock up 7-10 days *prior* to identified peaks.
+    - **Staffing**: Schedule senior staff on 'Critical Dates'.
+    - **Marketing**: Launch promotions during predicted 'Valleys' to stabilize cash flow.
+    """)
+
 df = load_data()
 val_df = load_val_data()
 
