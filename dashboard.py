@@ -176,19 +176,24 @@ with st.sidebar:
 st.markdown('<h1 class="dashboard-header">AI Sales Pulse ⚡</h1>', unsafe_allow_html=True)
 st.markdown('<p class="sub-gradient">Strategic Enterprise Demand Intelligence & Pipeline Forecasting.</p>', unsafe_allow_html=True)
 
-# --- EXECUTIVE STRATEGIC BRIEF ---
-with st.expander("📝 EXECUTIVE STRATEGIC BRIEF (HOW TO USE THIS DATA)", expanded=False):
-    st.markdown("""
-    ### **1. Interpreting the Data**
-    - **Forecast Path**: The core line is your most likely revenue target.
-    - **Confidence Bands**: Shaded areas represent the 'Safe Zone'. If sales stay here, the business is on track.
-    - **Peak Alerts**: 🔥 indicate high-demand days where inventory and staffing must be maximized.
+# --- EXECUTIVE STRATEGIC BRIEF (NOW ALWAYS VISIBLE) ---
+st.markdown('<p class="section-title">Executive Strategic Intelligence</p>', unsafe_allow_html=True)
+with st.container(border=True):
+    c1, c2 = st.columns([1, 1])
+    with c1:
+        st.markdown("#### **📊 What the Forecast Means**")
+        st.markdown("- **Core Path**: Most likely revenue target based on AI analysis.")
+        st.markdown("- **Safety Zone**: Confidence bands representing operational stability.")
+        st.markdown("- **Peak Alerts**: High-demand triggers for staffing & inventory.")
+    with c2:
+        st.markdown("#### **🛠️ Operational Action Plan**")
+        st.markdown("- **Inventory**: Re-stock 7 days *before* predicted peaks.")
+        st.markdown("- **Staffing**: Assign senior staff to 'Critical Surge' dates.")
+        st.markdown("- **Cash Flow**: Use 'Slow Day' predictions to launch mini-promos.")
+    
+    st.caption(f"System Integrity: 🟢 Active | Last Strategy Sync: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
 
-    ### **2. Operational Action Plan**
-    - **Inventory**: Stock up 7-10 days *prior* to identified peaks.
-    - **Staffing**: Schedule senior staff on 'Critical Dates'.
-    - **Marketing**: Launch promotions during predicted 'Valleys' to stabilize cash flow.
-    """)
+st.markdown("<br>", unsafe_allow_html=True)
 
 df = load_data()
 val_df = load_val_data()
