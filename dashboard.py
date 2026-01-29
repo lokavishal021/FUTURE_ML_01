@@ -377,30 +377,34 @@ if df is not None:
             st.plotly_chart(fig_rd, use_container_width=True)
 
     with r_right:
-        # Filling the void with high-level intelligence
+        # Unified Sidebar for perfect alignment
         with st.container(border=True):
-            st.markdown("#### **🎯 Strategic Forecast Insight**")
+            st.markdown("#### **🎯 Intelligence Hub**")
+            
+            # Sub-section 1: Insights
             st.markdown(f"""
-            The model predicts a total volume of **${forecast['Revenue'].sum():,.0f}** for the next 30 days. 
-            Demand is expected to be **{((forecast['Revenue'].sum() / actuals['Revenue'].tail(30).sum()) - 1)*100:+.1f}%** 
-            compared to the previous period.
-            """)
-            st.info("💡 Recommendation: Align logistics for the upcoming surge.")
-
-        with st.container(border=True):
+            <div style='background: rgba(99, 102, 241, 0.05); padding: 15px; border-radius: 12px; border-left: 4px solid #6366f1; margin-bottom: 20px;'>
+                <p style='margin: 0; font-size: 0.8rem; color: #94a3b8;'>30-DAY SALES OUTLOOK</p>
+                <p style='margin: 0; font-size: 1.4rem; font-weight: 800; color: #f8fafc;'>${forecast['Revenue'].sum():,.0f}</p>
+                <p style='margin: 0; font-size: 0.85rem; color: { "#10b981" if (forecast["Revenue"].sum() / actuals["Revenue"].tail(30).sum()) >= 1 else "#ef4444" };'>
+                    {((forecast['Revenue'].sum() / actuals['Revenue'].tail(30).sum()) - 1)*100:+.1f}% vs Previous Period
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+            
             st.markdown("#### **🔥 High-Volume Surges**")
-            top_d = forecast.nlargest(8, 'Revenue')
-            st.markdown("<div style='height: 250px; overflow-y: auto;'>", unsafe_allow_html=True)
+            top_d = forecast.nlargest(10, 'Revenue')
+            # Calculating dynamic height to match chart (400px - header - insight box)
+            st.markdown("<div style='height: 210px; overflow-y: auto; margin-top: -10px;'>", unsafe_allow_html=True)
             for _, row in top_d.iterrows():
                 st.markdown(f"""
-                <div class="alert-card">
+                <div class="alert-card" style="padding: 12px; margin-bottom: 8px;">
                     <div>
-                        <div class="alert-date">{row['Date'].strftime('%d %B')}</div>
-                        <div style='color: #64748b; font-size: 0.8rem;'>{row['Weekday']}</div>
+                        <div class="alert-date" style="font-size: 0.9rem;">{row['Date'].strftime('%d %B')}</div>
+                        <div style='color: #64748b; font-size: 0.75rem;'>{row['Weekday']}</div>
                     </div>
                     <div style='text-align: right;'>
-                        <span class="alert-badge">🔥 PEAK ALERT</span><br>
-                        <div class="alert-val">${row['Revenue']:,.0f}</div>
+                        <div class="alert-val" style="font-size: 1rem;">${row['Revenue']:,.0f}</div>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
