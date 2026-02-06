@@ -12,3 +12,5 @@ plotly
 altair<5
 scipy
 Pillow
+
+# Force Rebuild Trigger
